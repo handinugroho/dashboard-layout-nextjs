@@ -1,7 +1,9 @@
 "use client";
 import clsx from "clsx";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FiChevronsLeft } from "react-icons/fi";
+import { useSidebarStore } from "../sidebarStore";
 import NestedLink from "./NestedLink";
 const MIN_WIDTH_IN_PX = 280;
 const DEFAULT_WIDTH_IN_PX = 400;
@@ -67,18 +69,21 @@ const links = [
 const Sidebar = () => {
     const sidebarRef = useRef<HTMLDivElement>(null);
     const [isResizing, setIsResizing] = useState(false);
-    const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH_IN_PX);
 
-    const startResizing = useCallback(() => {
+    const sidebarWidth = useSidebarStore((state) => state.sidebarWidth);
+    const isShowingSidebar = useSidebarStore((s) => s.computed.isShowing);
+    const setSidebarWidth = useSidebarStore(
+        (state) => state.changeSidebarWidth
+    );
+
+    const closeSidebar = useSidebarStore((s) => s.closeSidebar);
+
+    const startResizing = () => {
         setIsResizing(true);
-    }, []);
+    };
 
-    const stopResizing = useCallback(() => {
-        setIsResizing(false);
-    }, []);
-
-    const resize = useCallback(
-        (mouseMoveEvent: MouseEvent) => {
+    useEffect(() => {
+        const resize = (mouseMoveEvent: MouseEvent) => {
             if (isResizing) {
                 if (sidebarRef.current != null) {
                     let width = Math.min(
@@ -92,40 +97,39 @@ const Sidebar = () => {
                     setSidebarWidth(width);
                 }
             }
-        },
-        [isResizing]
-    );
-
-    useEffect(() => {
+        };
+        const stopResizing = () => {
+            setIsResizing(false);
+        };
         window.addEventListener("mousemove", resize);
         window.addEventListener("mouseup", stopResizing);
         return () => {
             window.removeEventListener("mousemove", resize);
             window.removeEventListener("mouseup", stopResizing);
         };
-    }, [resize, stopResizing]);
+    }, [isResizing, setSidebarWidth]);
 
-    const isShowingSidebar = sidebarWidth > 0;
     return (
         <div
-            className='relative flex flex-row z-1 bg-white shadow-2xl'
+            className='relative flex flex-row z-1  shadow-2xl'
             ref={sidebarRef}
             onMouseDown={(e) => e.preventDefault()}>
             <motion.div
-                className={clsx("h-full max-h-full overflow-hidden")}
+                className={clsx(
+                    "h-full max-h-full overflow-x-hidden overflow-y-auto"
+                )}
                 initial={{ width: DEFAULT_WIDTH_IN_PX }}
                 animate={{
                     width: sidebarWidth,
                 }}
-                transition={{ bounce: 0, damping: 100 }}>
-                <div className='flex flex-row justify-between items-center p-4'>
+                transition={{ bounce: 0 }}>
+                <div className='flex flex-row justify-between items-center p-4 group hover:bg-gray-400 hover:bg-opacity-20 transition'>
                     <h1 className='font-medium text-xl'>Sidebar</h1>
                     <button
+                        className='p-2 rounded opacity-0 group-hover:opacity-100 transition hover:bg-gray-400 hover:bg-opacity-20'
                         type='button'
-                        onClick={() => {
-                            setSidebarWidth(0);
-                        }}>
-                        Hide
+                        onClick={closeSidebar}>
+                        <FiChevronsLeft />
                     </button>
                 </div>
                 <div className='mt-4'>
@@ -146,19 +150,6 @@ const Sidebar = () => {
                 onMouseDown={startResizing}>
                 <div className='cursor-col-resize h-screen w-[12px] resize-x hover:bg-opacity-30 hover:bg-gray-400 transition ease-in-out'></div>
             </div>
-            <motion.button
-                tabIndex={0}
-                className={clsx(
-                    "absolute top-0 left-0 p-3 bg-white border z-0"
-                )}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isShowingSidebar ? 0 : 100 }}
-                type='button'
-                onClick={() => {
-                    setSidebarWidth(DEFAULT_WIDTH_IN_PX);
-                }}>
-                Show
-            </motion.button>
         </div>
     );
 };

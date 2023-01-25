@@ -39,21 +39,23 @@ const NestedLink = ({ href, title, dataChildren }: Props) => {
                         </div>
                     </div>
                 </Link>
-                <motion.div
-                    className={"w-full overflow-hidden pl-4"}
-                    initial={{ height: "0" }}
-                    animate={{ height: isToggle ? "fit-content" : 0 }}>
-                    {dataChildren.map((child) => {
-                        return (
-                            <NestedLink
-                                key={child.id}
-                                href={href + child.href}
-                                title={child.title}
-                                dataChildren={child.dataChildren}
-                            />
-                        );
-                    })}
-                </motion.div>
+                {isToggle && (
+                    <motion.div
+                        className={"w-full overflow-hidden pl-4"}
+                        initial={{ height: "0" }}
+                        animate={{ height: isToggle ? "fit-content" : 0 }}>
+                        {dataChildren.map((child) => {
+                            return (
+                                <NestedLink
+                                    key={child.id}
+                                    href={href + child.href}
+                                    title={child.title}
+                                    dataChildren={child.dataChildren}
+                                />
+                            );
+                        })}
+                    </motion.div>
+                )}
             </div>
         );
     }
