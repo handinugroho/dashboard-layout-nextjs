@@ -3,11 +3,11 @@ import clsx from "clsx";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { FiChevronsLeft } from "react-icons/fi";
-import { useSidebarStore } from "../sidebarStore";
+import {
+    DEFAULT_WIDTH_IN_PX,
+    useSidebarStore,
+} from "../../stores/sidebarStore";
 import NestedLink from "./NestedLink";
-const MIN_WIDTH_IN_PX = 280;
-const DEFAULT_WIDTH_IN_PX = 400;
-const MAX_WIDTH_IN_PX = 500;
 
 const links = [
     {
@@ -67,6 +67,7 @@ const links = [
 ];
 
 const Sidebar = () => {
+    // You can use any @media property
     const sidebarRef = useRef<HTMLDivElement>(null);
     const [isResizing, setIsResizing] = useState(false);
 
@@ -86,21 +87,17 @@ const Sidebar = () => {
         const resize = (mouseMoveEvent: MouseEvent) => {
             if (isResizing) {
                 if (sidebarRef.current != null) {
-                    let width = Math.min(
-                        Math.max(
-                            MIN_WIDTH_IN_PX,
-                            mouseMoveEvent.clientX -
-                                sidebarRef.current.getBoundingClientRect().left
-                        ),
-                        MAX_WIDTH_IN_PX
+                    setSidebarWidth(
+                        mouseMoveEvent.clientX -
+                            sidebarRef.current.getBoundingClientRect().left
                     );
-                    setSidebarWidth(width);
                 }
             }
         };
         const stopResizing = () => {
             setIsResizing(false);
         };
+
         window.addEventListener("mousemove", resize);
         window.addEventListener("mouseup", stopResizing);
         return () => {
@@ -111,19 +108,19 @@ const Sidebar = () => {
 
     return (
         <div
-            className='relative flex flex-row z-1  shadow-2xl'
+            className={clsx(
+                "absolute md:relative z-50 md:z-1 bg-white flex flex-row z-1 shadow-2xl max-w-full"
+            )}
             ref={sidebarRef}
             onMouseDown={(e) => e.preventDefault()}>
             <motion.div
-                className={clsx(
-                    "h-full max-h-full overflow-x-hidden overflow-y-auto"
-                )}
+                className={clsx("overflow-x-hidden h-screen flex flex-col")}
                 initial={{ width: DEFAULT_WIDTH_IN_PX }}
                 animate={{
                     width: sidebarWidth,
                 }}
                 transition={{ bounce: 0 }}>
-                <div className='flex flex-row justify-between items-center p-4 group hover:bg-gray-400 hover:bg-opacity-20 transition'>
+                <div className='flex flex-row justify-between items-center p-4 group hover:bg-gray-400 hover:bg-opacity-20 transition min-h-[80px]'>
                     <h1 className='font-medium text-xl'>Sidebar</h1>
                     <button
                         className='p-2 rounded opacity-0 group-hover:opacity-100 transition hover:bg-gray-400 hover:bg-opacity-20'
@@ -132,7 +129,7 @@ const Sidebar = () => {
                         <FiChevronsLeft />
                     </button>
                 </div>
-                <div className='mt-4'>
+                <div className='flex-grow mt-4 overflow-y-auto'>
                     {links.map((link) => {
                         return (
                             <NestedLink

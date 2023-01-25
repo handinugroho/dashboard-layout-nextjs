@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-const MIN_WIDTH_IN_PX = 280;
-const DEFAULT_WIDTH_IN_PX = 400;
-const MAX_WIDTH_IN_PX = 500;
+export const MIN_WIDTH_IN_PX = 280;
+export const DEFAULT_WIDTH_IN_PX = 300;
+export const MAX_WIDTH_IN_PX = 500;
 
 interface ISidebarWidth {
     sidebarWidth: number;
@@ -15,7 +15,11 @@ export const useSidebarStore = create<ISidebarWidth>((set, get) => ({
     sidebarWidth: DEFAULT_WIDTH_IN_PX,
     changeSidebarWidth: (newWidth: number) => {
         set(() => {
-            return { sidebarWidth: newWidth };
+            let width = Math.min(
+                Math.max(MIN_WIDTH_IN_PX, newWidth),
+                MAX_WIDTH_IN_PX
+            );
+            return { sidebarWidth: width };
         });
     },
     openSidebar: () => {
